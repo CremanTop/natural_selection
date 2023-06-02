@@ -7,7 +7,7 @@ from Entity import Entity, get_distance, get_distance_pos
 # from Game import WIDTH, HEIGHT
 from Position import Position
 
-sp_evol = 20  # speed evolution
+sp_evol = 10  # speed evolution
 
 
 class Animal(Entity):
@@ -88,7 +88,7 @@ class Animal(Entity):
             #     self.wayY = 0
             #     return
             if (phase == 1 and not self.tired) or (phase == 0 and not self.is_saturated()):
-                goal = 0
+                #goal = 0
                 for entity in entities:
                     distance = get_distance(self, entity)
                     if self != entity:
@@ -115,7 +115,7 @@ class Animal(Entity):
                                 wayX = self.speed * (entity.pos.x - self.pos.x) / distance
                                 wayY = self.speed * (entity.pos.y - self.pos.y) / distance
                                 minimal = distance
-                                goal = entity
+                                #goal = entity
                 # if goal != 0 and debug:
                 #     goal.color = pygame.Color('red')
 
@@ -139,11 +139,11 @@ class Animal(Entity):
 def reproduct(entity1: Animal, entity2: Animal):
     pos = Position((entity1.pos.x + entity2.pos.x) / 2, (entity1.pos.y + entity2.pos.y) / 2)
     size = (entity1.size + entity2.size) // 2 + randint(-sp_evol, sp_evol)
-    speed = (entity1.speed + entity2.speed) // 2 + randint(-sp_evol * 3, sp_evol * 3) #- size // 3
+    speed = (entity1.speed + entity2.speed) // 2 + randint(-sp_evol * 2, sp_evol * 2) #- size // 3
     range_view = (entity1.range_view + entity2.range_view) // 2 + randint(-sp_evol * 8, sp_evol * 8)
     stamina = (entity1.stamina + entity2.stamina) // 2 + randint(-sp_evol * 5, sp_evol * 5)
 
-    e_type = random.choices([entity1.type, 'raptor' if entity1.type == 'herbivorous' else 'herbivorous'], weights=[99, 0])
+    e_type = random.choices([entity1.type, 'raptor' if entity1.type == 'herbivorous' else 'herbivorous'], weights=[299, 1])
 
     entity = Animal(pos.x, pos.y, size, speed, range_view, stamina, e_type[0])
     #print(size, speed, e_type[0], entity)

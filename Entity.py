@@ -1,4 +1,5 @@
 import pygame
+import numba
 
 from Game import WIDTH, HEIGHT
 from Position import Position
@@ -31,6 +32,7 @@ class Entity:
 
 def get_distance(entity1: Entity, entity2: Entity):
     return pow(pow(entity2.pos.x - entity1.pos.x, 2) + pow(entity2.pos.y - entity1.pos.y, 2), 0.5)
+
 
 def get_distance_pos(pos1: Position, pos2: Position):
     return pow(pow(pos2.x - pos1.x, 2) + pow(pos2.y - pos1.y, 2), 0.5)

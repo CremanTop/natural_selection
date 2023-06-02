@@ -1,6 +1,9 @@
 from random import randint
 
 import pygame
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 WIDTH = 1200
 HEIGHT = 700
@@ -9,6 +12,7 @@ from Animal import Animal
 from Food import Food
 
 count = 0
+num = []
 
 
 class Game:
@@ -30,6 +34,14 @@ class Game:
 
         self.running = True
         self.debug = False
+
+        self.history_num_herb = []
+        self.history_num_raptor = []
+        self.history_speed = []
+        self.history_size = []
+        self.history_range = []
+        self.history_stamina = []
+
         # oldX = 0
         # oldY =
 
@@ -55,9 +67,9 @@ class Game:
 
     def fill_entities(self, num: int):
         size = 10
-        speed = 10
-        view_range = 1000
-        stamina = 1000
+        speed = 3
+        view_range = 50
+        stamina = 200
         [self.add_entity(
             Animal(randint(size, self.width - size), randint(size, self.height - size), size, speed, view_range,
                    stamina, 'herbivorous')) for _ in range(num)]
@@ -68,9 +80,10 @@ class Game:
     def setup_morning(self):
         self.phase = 0
         self.full_energy()
-        print('Утро')
+        #print('Утро')
 
-        entity_count = len(self.entities)
+        herb_count = 0
+        raptor_count = 0
         a_speed = 0
         a_range = 0
         a_stamina = 0
@@ -87,22 +100,44 @@ class Game:
             else:
                 entity.saturation = 0
 
+            if entity.is_herbivorous():
+                herb_count += 1
+            elif entity.is_raptor():
+                raptor_count += 1
+
             a_speed += entity.speed
             a_range += entity.range_view
             a_stamina += entity.stamina
             a_size += entity.size
 
-        a_speed = a_speed / entity_count
-        a_size = a_size / entity_count
-        a_range = a_range / entity_count
-        a_stamina = a_stamina / entity_count
-        print(entity_count, int(a_size), int(a_stamina), int(a_speed), int(a_range))
+        self.history_num_herb.append(herb_count)
+        self.history_num_raptor.append(raptor_count)
+        self.history_speed.append(a_speed / (herb_count + raptor_count))
+        self.history_size.append(a_size / (herb_count + raptor_count))
+        self.history_range.append(a_range / (herb_count + raptor_count))
+        self.history_stamina.append(a_stamina / (herb_count + raptor_count))
+
+        #print(herb_count, raptor_count, int(a_size), int(a_stamina), int(a_speed), int(a_range))
 
         self.fill_foods(100)
 
+    def stats(self):
+        data = {'Кол-во травоядных': self.history_num_herb,
+                'Кол-во хищников': self.history_num_raptor,
+                'Средний размер': self.history_size,
+                'Средняя скорость': self.history_speed,
+                'Средний запас сил': self.history_stamina,
+                'Средняя дальность зрения': self.history_range}
+        df = pd.DataFrame(data)
+        x = np.arange(len(self.history_num_raptor))
+        plt.axis([0, len(self.history_num_raptor), 0, 300])
+        plt.plot(x, df)
+        plt.legend(data, loc=2)
+        plt.show()
+
     def setup_evening(self):
         self.phase = 1
-        print('Вечер')
+        #print('Вечер')
 
     def reverse_phase(self):
         if self.phase == 0:
@@ -119,22 +154,23 @@ class Game:
     def life(self):
         # [print(entity.type, end=', ') for entity in self.entities]
         # print('')
-        for entity in self.entities:
-            if self.phase == 0:
-                self.search_food(entity)
-            elif self.phase == 1:
-                if entity.is_saturated():
-                    entity.search_entity(self.entities, self.phase, self.debug)
-                else:
+        if len(self.entities) > 0:
+            for entity in self.entities:
+                if self.phase == 0:
                     self.search_food(entity)
-            entity.follow_nearest()
-        global count
-        if count % ((self.fps // 60) + 1) == 0:
-            self.render()
-            pygame.display.flip()
-        self.clock.tick(self.fps)
-        self.tick = (self.tick + 1) % 60
-        if self.tick == 0:
-            self.reverse_phase()
-        count += 1
-        # print(count)
+                elif self.phase == 1:
+                    if entity.is_saturated():
+                        entity.search_entity(self.entities, self.phase, self.debug)
+                    else:
+                        self.search_food(entity)
+                entity.follow_nearest()
+            global count
+            if count % ((self.fps // 60) + 1) == 0:
+                self.render()
+                pygame.display.flip()
+            self.clock.tick(self.fps)
+            self.tick = (self.tick + 1) % 60
+            if self.tick == 0:
+                self.reverse_phase()
+            count += 1
+            # print(count)

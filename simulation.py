@@ -4,7 +4,7 @@ from Game import Game
 
 game = Game()
 
-game.fill_entities(2)
+game.fill_entities(50)
 game.fill_foods(100)
 
 while True:
@@ -20,12 +20,22 @@ while True:
                 game.running = not game.running
 
             elif event.key in key_number:
-                game.fps = 60 * pow(10, key_number.index(event.key))
                 if event.key == key_number[0]:
                     game.fps = 10
+                elif event.key == key_number[1]:
+                    game.fps = 60
+                elif event.key == key_number[2]:
+                    game.fps = 150
+                elif event.key == key_number[3]:
+                    game.fps = 600
+                else:
+                    game.fps = 3000
 
             elif event.key == pygame.K_d:
                 game.debug = not game.debug
+
+            elif event.key == pygame.K_g:
+                game.stats()
 
         # elif event.type == pygame.MOUSEBUTTONDOWN:
         #     if event.button == 1:
